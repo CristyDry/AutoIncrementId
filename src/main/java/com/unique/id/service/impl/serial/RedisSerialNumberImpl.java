@@ -57,21 +57,18 @@ public class RedisSerialNumberImpl extends AbstractSerialNumberService {
         }else{
             String key = getKey(prefix);//键名
             if (!currentKey.equals(key)) {
+                deletePreData(currentKey);
                 currentKey = key;
                 prefixMap.put(prefix, currentKey);
             }
         }
         long number = redisOperations.opsForValue().increment(currentKey, 1L);//获取下个序号;
-        if (number == 1) {
-            //第一个序号
-            deletePreData(currentKey);
-        }
         return number;
     }
 
     /*删除上一天的数据*/
     private void deletePreData(String key) {
-        redisOperations.expire(key, 2L, TimeUnit.DAYS);
+        redisOperations.delete(key);
     }
 
     /**
