@@ -45,7 +45,7 @@ public class LocalSerialNumberImpl extends AbstractSerialNumberService {
             if (startSerialNumber == null) {
                 Long number = getNumber(currentKey, ".number");
                 if (number != null) {
-                    deleteNumber(prefix); //删除旧序号
+                    deleteNumber(currentKey); //删除旧序号
                     atomicIntegerMap.put(currentKey, number);//自增重置
                 }
             } else {
@@ -62,7 +62,7 @@ public class LocalSerialNumberImpl extends AbstractSerialNumberService {
         } else {
             String key = getKey(prefix);//键名
             if (!currentKey.equals(key)) {
-                deleteNumber(prefix); //删除旧序号
+                deleteNumber(currentKey); //删除旧序号
                 atomicIntegerMap.put(currentKey, 0);
                 currentKey = key;
                 prefixMap.put(prefix, currentKey);
@@ -80,7 +80,7 @@ public class LocalSerialNumberImpl extends AbstractSerialNumberService {
         if (!autoDelete) {
             return;
         }
-        File file = new File(filePath + key + ".number");
+        File file = new File(filePath, key + ".number");
         if (file.exists()) {
             file.delete();
         }
@@ -102,7 +102,7 @@ public class LocalSerialNumberImpl extends AbstractSerialNumberService {
 
     /*获取已保存序号*/
     private Long getNumber(String key, String name) {
-        File file = new File(filePath + key + name);
+        File file = new File(filePath, key + name);
         if (file.exists()) {
             try {
                 return new Long(Files.readFirstLine(file, Charset.forName("utf-8")));
@@ -117,7 +117,9 @@ public class LocalSerialNumberImpl extends AbstractSerialNumberService {
      */
     private void saveData(String key, String name, long val) {
         try {
-            Files.write(String.valueOf(val), new File(filePath + key + name), Charset.forName("utf-8"));
+            File file = new File(filePath, key + name);
+            Files.createParentDirs(file);
+            Files.write(String.valueOf(val), file, Charset.forName("utf-8"));
         } catch (IOException e) {
         }
     }
@@ -126,7 +128,7 @@ public class LocalSerialNumberImpl extends AbstractSerialNumberService {
      * 判断是否修复过
      */
     private boolean isRepair(String key, Long val) {
-        File file = new File(filePath + key + ".repair");
+        File file = new File(filePath, key + ".repair");
         if (file.exists()) {
             Long preNumber = getNumber(key, ".repair");
             return preNumber != null && preNumber.compareTo(val) == 0;

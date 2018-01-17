@@ -16,7 +16,7 @@ public class TestUnique {
 
     //本地序号
     @Test
-    public void testLocalAutoIncrease() {
+    public void testLocalAutoIncrease() throws InterruptedException {
         JedisConnectionFactory factory = new JedisConnectionFactory();
         factory.setHostName("127.0.0.1");
         factory.setPort(6379);
@@ -37,10 +37,12 @@ public class TestUnique {
         //本地序号
         LocalSerialNumberImpl serialNumber = new LocalSerialNumberImpl();
         serialNumber.setAutoDelete(true);
-        serialNumber.setFilePath("E://");
+        serialNumber.setFilePath("E://test");
         //serialNumber.setPattern("yyyyMMdd");//每日重置
-        serialNumber.setPattern("yyyyMMddHH");//每小时重置
+        //serialNumber.setPattern("yyyyMMddHH");//每小时重置
         //serialNumber.setPattern("yyyyMMddHHmm");//每分钟重置
+        serialNumber.setPattern("yyyyMMddHHmmss");//每秒钟重置
+
         //非连续
         WorkerSerialNumberImpl workerSerialNumber = new WorkerSerialNumberImpl(machineFactory.machineId());
         //序号生成
@@ -48,14 +50,15 @@ public class TestUnique {
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        for (int i = 0; i < 10; i++) {
-            //有序
-            System.out.println(String.format("%s%s%03d%s%05d", "DNO", "00001", unique.machineId(), "20180101", unique.nextSerialId("DNO")));
-            //非连续
-            System.out.println(unique.nextUniqueId(""));
+        while (true){
+           //有序
+           System.out.println(String.format("%s%s%03d%s%05d", "DNO", "00001", unique.machineId(), "20180101", unique.nextSerialId("DNO")));
+           //非连续
+           System.out.println(unique.nextUniqueId(""));
+            Thread.sleep(500);
         }
-        stopWatch.stop();
-        System.out.println(stopWatch.toString());
+        //stopWatch.stop();
+        //System.out.println(stopWatch.toString());
     }
 
     //redis序号
